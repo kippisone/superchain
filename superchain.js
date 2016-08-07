@@ -16,6 +16,11 @@ Superchain.prototype.add = function (fn) {
   return this;
 };
 
+Superchain.prototype.end = function (msg) {
+  this.__cancleChain = true;
+  this.__cancleChainMessage = msg;
+};
+
 /**
  * Calls chain and returns a promise
  * @param  {Function} fn Success function
@@ -25,6 +30,11 @@ Superchain.prototype.then = function (fn) {
   return new Promise((resolve, reject) => {
     let res = [];
     let next = () => {
+      if (this.__cancleChain) {
+        resolve(this.__cancleChainMessage || res);
+        return;
+      }
+
       let job = this.chain.shift();
       if (!job) {
         resolve(res);
