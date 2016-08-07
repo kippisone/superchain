@@ -6,7 +6,7 @@
   "author": "Andi Heinkelein <andifeind@noname-media.com>",
   "license": "MIT",
   "scripts": {
-    "test": "mocha --reporter lagoon-reporter tets/*.spec.js"
+    "test": "mocha --reporter lagoon-reporter tests/*.spec.js"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/Andifeind/superchain/issues"
   },
-  "homepage": "https://github.com/Andifeind/superchain#readme"
+  "homepage": "https://github.com/Andifeind/superchain#readme",
+  "devDependencies": {
+    "inspect.js": "^1.2.1",
+    "lagoon-reporter": "^0.3.3"
+  }
 }
