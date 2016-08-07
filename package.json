@@ -1,6 +1,6 @@
 {
   "name": "superchain",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Calls methods or promises in series",
   "main": "superchain.js",
   "author": "Andi Heinkelein <andifeind@noname-media.com>",
