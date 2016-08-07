@@ -65,6 +65,10 @@ Superchain.prototype.then = function (fn) {
 };
 
 module.exports = {
+  chain: function() {
+    let superchain = new Superchain();
+    return superchain;
+  },
   add: function(fn) {
     let superchain = new Superchain();
     superchain.add(fn);
