@@ -1,0 +1,24 @@
+{
+  "name": "superchain",
+  "version": "0.0.0",
+  "description": "Calls methods or promises in series",
+  "main": "index.js",
+  "author": "Andi Heinkelein <andifeind@noname-media.com>",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha --reporter lagoon-reporter tets/*.spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Andifeind/superchain.git"
+  },
+  "keywords": [
+    "series",
+    "chain",
+    "sync"
+  ],
+  "bugs": {
+    "url": "https://github.com/Andifeind/superchain/issues"
+  },
+  "homepage": "https://github.com/Andifeind/superchain#readme"
+}
