@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 function Superchain() {
   this.chain = [];
