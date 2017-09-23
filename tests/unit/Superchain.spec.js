@@ -100,7 +100,7 @@ describe('Superchain', () => {
 
     it('adds an async function to the chain', function () {
       if (!isAsyncSupported()) {
-        this.test.title = ``
+        this.test.title = `(SKIP TEST: async functions not supported by current Node version!) ${this.test.title})`
         this.skip()
         return
       }
@@ -154,7 +154,7 @@ describe('Superchain', () => {
 
     it('adds an async function to the chain', function () {
       if (!isAsyncSupported()) {
-        this.test.title = ``
+        this.test.title = `(SKIP TEST: async functions not supported by current Node version!) ${this.test.title})`
         this.skip()
         return
       }
@@ -231,12 +231,19 @@ describe('Superchain', () => {
       })
     })
 
-    it('should run all chain-links, using async function', () => {
-      const fn1 = async function (ctx, next) { await {}; ctx.one = 'one'; next() }
-      const fn2 = async function (ctx, next) { await {}; ctx.two = 'two'; next() }
-      const fn3 = async function (ctx, next) { await {}; ctx.three = 'three'; next() }
-      const fn4 = async function (ctx, next) { await {}; ctx.four = 'four'; next() }
-      const fn5 = async function (ctx, next) { await {}; ctx.five = 'five'; next() }
+    it('should run all chain-links, using async function', function () {
+      /* eslint-disable no-eval */
+      if (!isAsyncSupported()) {
+        this.test.title = `(SKIP TEST: async functions not supported by current Node version!) ${this.test.title})`
+        this.skip()
+        return
+      }
+
+      const fn1 = eval('async function (ctx, next) { await {}; ctx.one = \'one\'; next() }')
+      const fn2 = eval('async function (ctx, next) { await {}; ctx.two = \'two\'; next() }')
+      const fn3 = eval('async function (ctx, next) { await {}; ctx.three = \'three\'; next() }')
+      const fn4 = eval('async function (ctx, next) { await {}; ctx.four = \'four\'; next() }')
+      const fn5 = eval('async function (ctx, next) { await {}; ctx.five = \'five\'; next() }')
 
       superchain.add(fn1)
       superchain.add(fn2)
@@ -259,11 +266,16 @@ describe('Superchain', () => {
     })
 
     it('should run all chain-links, using mixed functions', () => {
-      const fn1 = async function (ctx, next) { await {}; ctx.one = 'one'; next() }
+      /* eslint-disable no-eval */
+      const fn1 = isAsyncSupported()
+        ? eval('async function (ctx, next) { await {}; ctx.one = \'one\'; next() }')
+        : function (ctx, next) { ctx.one = 'one'; next() }
       const fn2 = function * (ctx, next) { yield {}; ctx.two = 'two'; next() }
       const fn3 = function (ctx, next) { ctx.three = 'three'; next() }
       const fn4 = (ctx, next) => { ctx.four = 'four'; next() }
-      const fn5 = async function (ctx, next) { await {}; ctx.five = 'five'; next() }
+      const fn5 = isAsyncSupported()
+        ? eval('async function (ctx, next) { await {}; ctx.five = \'five\'; next() }')
+        : function (ctx, next) { ctx.five = 'five'; next() }
 
       superchain.add(fn1)
       superchain.add(fn2)
