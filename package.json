@@ -1,7 +1,7 @@
 {
   "name": "superchain",
   "version": "1.0.0",
-  "description": "Calls methods or promises in series",
+  "description": "High performant middleware chain",
   "main": "src/superchain.js",
   "author": "Andi Heinkelein <andifeind@noname-media.com>",
   "license": "MIT",
@@ -14,6 +14,9 @@
     "url": "git+ssh://git@github.com/Andifeind/superchain.git"
   },
   "keywords": [
+    "middleware",
+    "use",
+    "async",
     "series",
     "chain",
     "sync"
