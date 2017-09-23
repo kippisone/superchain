@@ -2,7 +2,8 @@
 
 [![Build Status](https://travis-ci.org/Andifeind/superchain.svg?branch=master)](https://travis-ci.org/Andifeind/superchain)
 
-Superchain is a high performant middleware chain. Each chain-link calls the next one until the end of the chain is reached.
+Superchain is a high performant middleware chain.  
+Each chain-link calls the next one until the end of the chain was reached.
 
 ```js
 import Superchain from 'superchain'
@@ -45,7 +46,7 @@ result
 The example above creates a chain with 3 items. Each item gets the same context object and calls the next chain-link. The final handler gets called as last one.
 
 Not only `callback functions` are supported. You deal with asynchronous code? Then use `generators` or `async functions`. We use [co](https://www.npmjs.com/package/co) to execute generators.
-Refer to their documentation to know more about generators.
+Look at to their documentation to know more about generators.
 
 ```js
 import Superchain from 'superchain'
