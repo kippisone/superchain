@@ -239,11 +239,11 @@ describe('Superchain', () => {
         return
       }
 
-      const fn1 = eval('async function (ctx, next) { await {}; ctx.one = \'one\'; next() }')
-      const fn2 = eval('async function (ctx, next) { await {}; ctx.two = \'two\'; next() }')
-      const fn3 = eval('async function (ctx, next) { await {}; ctx.three = \'three\'; next() }')
-      const fn4 = eval('async function (ctx, next) { await {}; ctx.four = \'four\'; next() }')
-      const fn5 = eval('async function (ctx, next) { await {}; ctx.five = \'five\'; next() }')
+      const fn1 = eval('(async function (ctx, next) { await {}; ctx.one = \'one\'; next() })')
+      const fn2 = eval('(async function (ctx, next) { await {}; ctx.two = \'two\'; next() })')
+      const fn3 = eval('(async function (ctx, next) { await {}; ctx.three = \'three\'; next() })')
+      const fn4 = eval('(async function (ctx, next) { await {}; ctx.four = \'four\'; next() })')
+      const fn5 = eval('(async function (ctx, next) { await {}; ctx.five = \'five\'; next() })')
 
       superchain.add(fn1)
       superchain.add(fn2)
@@ -268,13 +268,13 @@ describe('Superchain', () => {
     it('should run all chain-links, using mixed functions', () => {
       /* eslint-disable no-eval */
       const fn1 = isAsyncSupported()
-        ? eval('async function (ctx, next) { await {}; ctx.one = \'one\'; next() }')
+        ? eval('(async function (ctx, next) { await {}; ctx.one = \'one\'; next() })')
         : function (ctx, next) { ctx.one = 'one'; next() }
       const fn2 = function * (ctx, next) { yield {}; ctx.two = 'two'; next() }
       const fn3 = function (ctx, next) { ctx.three = 'three'; next() }
       const fn4 = (ctx, next) => { ctx.four = 'four'; next() }
       const fn5 = isAsyncSupported()
-        ? eval('async function (ctx, next) { await {}; ctx.five = \'five\'; next() }')
+        ? eval('(async function (ctx, next) { await {}; ctx.five = \'five\'; next() })')
         : function (ctx, next) { ctx.five = 'five'; next() }
 
       superchain.add(fn1)
