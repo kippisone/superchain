@@ -1,5 +1,7 @@
 # Superchain
 
+[![Build Status](https://travis-ci.org/Andifeind/superchain.svg?branch=master)](https://travis-ci.org/Andifeind/superchain)
+
 Superchain is a high performant middleware chain. Each chain-link calls the next one until the end of the chain is reached.
 
 ```js
