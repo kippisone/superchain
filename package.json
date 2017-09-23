@@ -2,11 +2,12 @@
   "name": "superchain",
   "version": "0.1.2",
   "description": "Calls methods or promises in series",
-  "main": "superchain.js",
+  "main": "src/superchain.js",
   "author": "Andi Heinkelein <andifeind@noname-media.com>",
   "license": "MIT",
   "scripts": {
-    "test": "mocha --reporter lagoon-reporter tests/unit/**/*.spec.js"
+    "test": "mocha --reporter lagoon-reporter tests/unit/**/*.spec.js",
+    "bench": "mocha --reporter lagoon-reporter tests/testberry/**/*.bench.js"
   },
   "repository": {
     "type": "git",
@@ -22,10 +23,14 @@
   },
   "homepage": "https://github.com/Andifeind/superchain#readme",
   "devDependencies": {
-    "@noname-media/standard": "1.0.1",
+    "@noname-media/eslint-config-standard": "1.1.0",
     "inspect.js": "1.9.0",
     "lagoon-reporter": "0.3.4",
     "mocha": "3.5.3",
-    "sinon": "3.3.0"
+    "sinon": "3.3.0",
+    "testberry": "^0.1.0"
+  },
+  "dependencies": {
+    "co-utils": "^0.3.1"
   }
 }

@@ -116,6 +116,60 @@ describe('Superchain', () => {
     })
   })
 
+  describe('final()', () => {
+    let superchain
+
+    beforeEach(() => {
+      superchain = new Superchain()
+    })
+
+    it('adds a function to the chain', () => {
+      const fn = sinon.stub()
+      const fn2 = sinon.stub()
+      const fn3 = sinon.stub()
+      superchain.final(fn)
+      superchain.final(fn2)
+      superchain.final(fn3)
+
+      inspect(superchain.__final).isEql([fn, fn2, fn3])
+    })
+
+    it('should throw an error if an unsupported link type is adding', () => {
+      inspect(superchain.final).withArgsOn(superchain, 'foo').doesThrow(/Unsupported chain-link.+was string/)
+      inspect(superchain.final).withArgsOn(superchain, 123).doesThrow(/Unsupported chain-link.+was number/)
+      inspect(superchain.final).withArgsOn(superchain, null).doesThrow(/Unsupported chain-link.+was null/)
+      inspect(superchain.final).withArgsOn(superchain, undefined).doesThrow(/Unsupported chain-link.+was undefined/)
+    })
+
+    it('adds a generator function to the chain', () => {
+      const fn = function * () {}
+      const fn2 = function * () {}
+      const fn3 = function * () {}
+      superchain.final(fn)
+      superchain.final(fn2)
+      superchain.final(fn3)
+
+      inspect(superchain.__final).isEql([fn, fn2, fn3])
+    })
+
+    it('adds an async function to the chain', function () {
+      if (!isAsyncSupported()) {
+        this.test.title = ``
+        this.skip()
+        return
+      }
+
+      const fn = eval('(async function () {})') // eslint-disable-line no-eval
+      const fn2 = eval('(async function () {})') // eslint-disable-line no-eval
+      const fn3 = eval('(async function () {})') // eslint-disable-line no-eval
+      superchain.final(fn)
+      superchain.final(fn2)
+      superchain.final(fn3)
+
+      inspect(superchain.__final).isEql([fn, fn2, fn3])
+    })
+  })
+
   describe('run()', () => {
     let superchain
 
@@ -123,37 +177,111 @@ describe('Superchain', () => {
       superchain = new Superchain()
     })
 
-    it('should run all chain-links in series (callbacks)', () => {
-      const fn1 = sinon.stub()
-      const fn2 = sinon.stub()
-      const fn3 = sinon.stub()
-
-      fn1.yieldsAsync(null, 'one')
-      fn1.yieldsAsync(null, 'two')
-      fn1.yieldsAsync(null, 'three')
+    it('should run all chain-links, using callbacks', () => {
+      const fn1 = (ctx, next) => { ctx.one = 'one'; next() }
+      const fn2 = (ctx, next) => { ctx.two = 'two'; next() }
+      const fn3 = (ctx, next) => { ctx.three = 'three'; next() }
+      const fn4 = (ctx, next) => { ctx.four = 'four'; next() }
+      const fn5 = (ctx, next) => { ctx.five = 'five'; next() }
 
       superchain.add(fn1)
       superchain.add(fn2)
       superchain.add(fn3)
+      superchain.add(fn4)
+      superchain.add(fn5)
 
       const ctx = {}
       const res = superchain.run(ctx)
       inspect(res).isPromise()
       return res.then((out) => {
-        inspect(fn1).wasCalledOnce()
-        inspect(fn1).wasCalledWith(ctx)
+        inspect(out).isEql({
+          one: 'one',
+          two: 'two',
+          three: 'three',
+          four: 'four',
+          five: 'five'
+        })
+      })
+    })
 
-        inspect(fn2).wasCalledOnce()
-        inspect(fn2).wasCalledWith(ctx)
+    it('should run all chain-links, using generators', () => {
+      const fn1 = function * (ctx, next) { yield {}; ctx.one = 'one'; next() }
+      const fn2 = function * (ctx, next) { yield {}; ctx.two = 'two'; next() }
+      const fn3 = function * (ctx, next) { yield {}; ctx.three = 'three'; next() }
+      const fn4 = function * (ctx, next) { yield {}; ctx.four = 'four'; next() }
+      const fn5 = function * (ctx, next) { yield {}; ctx.five = 'five'; next() }
 
-        inspect(fn3).wasCalledOnce()
-        inspect(fn3).wasCalledWith(ctx)
+      superchain.add(fn1)
+      superchain.add(fn2)
+      superchain.add(fn3)
+      superchain.add(fn4)
+      superchain.add(fn5)
 
-        inspect(out).isEql([
-          'one',
-          'two',
-          'three'
-        ])
+      const ctx = {}
+      const res = superchain.run(ctx)
+      inspect(res).isPromise()
+      return res.then((out) => {
+        inspect(out).isEql({
+          one: 'one',
+          two: 'two',
+          three: 'three',
+          four: 'four',
+          five: 'five'
+        })
+      })
+    })
+
+    it('should run all chain-links, using async function', () => {
+      const fn1 = async function (ctx, next) { await {}; ctx.one = 'one'; next() }
+      const fn2 = async function (ctx, next) { await {}; ctx.two = 'two'; next() }
+      const fn3 = async function (ctx, next) { await {}; ctx.three = 'three'; next() }
+      const fn4 = async function (ctx, next) { await {}; ctx.four = 'four'; next() }
+      const fn5 = async function (ctx, next) { await {}; ctx.five = 'five'; next() }
+
+      superchain.add(fn1)
+      superchain.add(fn2)
+      superchain.add(fn3)
+      superchain.add(fn4)
+      superchain.add(fn5)
+
+      const ctx = {}
+      const res = superchain.run(ctx)
+      inspect(res).isPromise()
+      return res.then((out) => {
+        inspect(out).isEql({
+          one: 'one',
+          two: 'two',
+          three: 'three',
+          four: 'four',
+          five: 'five'
+        })
+      })
+    })
+
+    it('should run all chain-links, using mixed functions', () => {
+      const fn1 = async function (ctx, next) { await {}; ctx.one = 'one'; next() }
+      const fn2 = function * (ctx, next) { yield {}; ctx.two = 'two'; next() }
+      const fn3 = function (ctx, next) { ctx.three = 'three'; next() }
+      const fn4 = (ctx, next) => { ctx.four = 'four'; next() }
+      const fn5 = async function (ctx, next) { await {}; ctx.five = 'five'; next() }
+
+      superchain.add(fn1)
+      superchain.add(fn2)
+      superchain.add(fn3)
+      superchain.add(fn4)
+      superchain.add(fn5)
+
+      const ctx = {}
+      const res = superchain.run(ctx)
+      inspect(res).isPromise()
+      return res.then((out) => {
+        inspect(out).isEql({
+          one: 'one',
+          two: 'two',
+          three: 'three',
+          four: 'four',
+          five: 'five'
+        })
       })
     })
   })
