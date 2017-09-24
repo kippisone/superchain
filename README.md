@@ -8,9 +8,7 @@ Each chain-link calls the next one until the end of the chain was reached.
 ```js
 import Superchain from 'superchain'
 
-const chain = new Superchain({
-  timeout: 10000
-})
+const chain = new Superchain()
 
 // add a middleware function
 chain.add((ctx, next) => {
@@ -29,8 +27,8 @@ chain.final((ctx, next) => {
 })
 
 
-// start the chain
-const result = chain.start(ctx)
+// run the chain
+const result = chain.run(ctx)
 
 // result is a promise
 result
@@ -51,9 +49,7 @@ Look at to their documentation to know more about generators.
 ```js
 import Superchain from 'superchain'
 
-const chain = new Superchain({
-  timeout: 10000
-})
+const chain = new Superchain()
 
 // add a middleware function
 chain.add(async function (ctx, next) {
@@ -68,8 +64,8 @@ chain.add(function * (ctx, next) {
   next()
 })
 
-// start the chain
-const result = chain.start(ctx)
+// run the chain
+const result = chain.run(ctx)
 result
   .then((ctx) => {
 
@@ -80,6 +76,86 @@ result
 
 ```
 
+#### Multiple arguments
+
+Pass multiple arguments to `run()` and each middleware gets all of it.
+
+```js
+import Superchain from 'superchain'
+
+const chain = new Superchain()
+
+// add a middleware function
+chain.add(async function (req, res, next) {
+  // do some fancy stuff here
+  await something()
+  next()
+})
+
+// run the chain
+chain.run(ctx)
+```
+
+
+#### This context
+
+Each middleware has the same `this` context. An empty object is passed when chain starts. It could be used to transport data between middlewares. The final promise returns the `this` context. Don't forget, arrow functions don't bind its own `this` context. Use normal functions instead if you need access to it.
+
+```js
+import Superchain from 'superchain'
+
+const chain = new Superchain()
+
+// add a middleware function
+chain.add(async function (req, res, next) {
+  this.foo = 'foo'
+  next()
+})
+
+chain.add(async function (req, res, next) {
+  this.bar = 'bar'
+  next()
+})
+
+// run the chain
+chain.run(ctx).then((ctx) => {
+  // ctx === {
+  //   foo: 'foo',
+  //   bar: 'bar'
+  // }
+})
+```
+
+#### Final promise
+
+The `run()` method returns a promise. If you're using the callback style and do not call `next()` the chain will stop and no promise will be called. In that case, you have to call `finish()` which is the last argument. This is the only way to get notified when a callback has done its job. The `finish` argument is not available in `generators` or `async functions`.
+
+```js
+import Superchain from 'superchain'
+
+const chain = new Superchain()
+
+chain.add((req, res, next, finish) => {
+  next()
+})
+
+chain.add((req, res, next, finish) => {
+  finish() // cancel the chain and call the final promise
+})
+
+chain.add((req, res, next, finish) => {
+  // never gets called
+})
+
+// run the chain
+chain.run(ctx).then((ctx) => {
+  // called after second middleware
+})
+```
+
+Calling `finish()` is only necessary when you use the final promise.
+
+
 #### Error handling
 
 Whenever an error was thrown the promise gets rejected and the chain is canceled.
@@ -87,9 +163,7 @@ Whenever an error was thrown the promise gets rejected and the chain is canceled
 ```js
 import Superchain from 'superchain'
 
-const chain = new Superchain({
-  timeout: 10000
-})
+const chain = new Superchain()
 
 // add a middleware function
 chain.add(async function (ctx, next) {
@@ -102,8 +176,8 @@ chain.add(async function (ctx, next) {
   next()
 })
 
-// start the chain
-const result = chain.start(ctx)
+// run the chain
+const result = chain.run(ctx)
 result
   .then((ctx) => {
     // will not be called
