@@ -187,3 +187,38 @@ result
   })
 
 ```
+
+#### Conditions
+
+Each middleware can have one condition function. The middleware gets called when the condition returns true otherwise it'll be skipped.
+
+```js
+import Superchain from 'superchain'
+
+const chain = new Superchain()
+
+const condition = (ctx) => {
+  return /^\/foo/.test(ctx.path)
+}
+
+chain.when(condition).add(async function (ctx, next) {
+  // it'll only be called when ctx.path starts with /foo
+  next()
+})
+
+chain.add(async function (ctx, next) {
+  // get not called
+  next()
+})
+
+// run the chain
+const result = chain.run(ctx)
+result
+  .then((ctx) => {
+    // will not be called
+  })
+  .catch((err) => {
+    // chain was canceled after first item
+  })
+
+```

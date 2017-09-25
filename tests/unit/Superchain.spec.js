@@ -420,4 +420,51 @@ describe('Superchain', () => {
       })
     })
   })
+
+  describe('when()', () => {
+    let superchain
+
+    beforeEach(() => {
+      superchain = new Superchain()
+    })
+
+    it('should call a middleware only if a condition is true', () => {
+      const req = {
+        path: '/foo'
+      }
+
+      superchain.add((ctx, next) => {
+        ctx.one = 'one'
+        next()
+      })
+
+      superchain.when((ctx) => {
+        return req.path === '/foo'
+      }).add((ctx, next) => {
+        ctx.two = 'two'
+        next()
+      })
+
+      superchain.when((ctx) => {
+        return req.path === '/bla'
+      }).add((ctx, next) => {
+        ctx.three = 'three'
+        next()
+      })
+
+      superchain.add((ctx, next) => {
+        ctx.four = 'four'
+        next()
+      })
+
+      return superchain.run(req).then(() => {
+        inspect(req).isEql({
+          path: '/foo',
+          one: 'one',
+          two: 'two',
+          four: 'four'
+        })
+      })
+    })
+  })
 })
