@@ -391,7 +391,7 @@ describe('Superchain', () => {
       })
     })
 
-    it('should takes multiple ctx arguments when using async functions', () => {
+    it('should takes multiple ctx arguments when using async functions', function () {
       /* eslint-disable no-eval */
       if (!isAsyncSupported()) {
         this.test.title = `(SKIP TEST: async functions not supported by current Node version!) ${this.test.title})`
@@ -439,14 +439,14 @@ describe('Superchain', () => {
       })
 
       superchain.when((ctx) => {
-        return req.path === '/foo'
+        return ctx.path === '/foo'
       }).add((ctx, next) => {
         ctx.two = 'two'
         next()
       })
 
       superchain.when((ctx) => {
-        return req.path === '/bla'
+        return ctx.path === '/bla'
       }).add((ctx, next) => {
         ctx.three = 'three'
         next()
@@ -463,6 +463,91 @@ describe('Superchain', () => {
           one: 'one',
           two: 'two',
           four: 'four'
+        })
+      })
+    })
+
+    it('all subchains geting the same this context', () => {
+      const req = {
+        path: '/foo'
+      }
+
+      superchain.add(function (ctx, next) {
+        this.one = 'one'
+        next()
+      })
+
+      superchain.when(function (ctx) {
+        return req.path === '/foo'
+      }).add(function (ctx, next) {
+        this.two = 'two'
+        next()
+      })
+
+      superchain.when(function (ctx) {
+        return req.path === '/bla'
+      }).add((ctx, next) => {
+        this.three = 'three'
+        next()
+      })
+
+      superchain.add(function (ctx, next) {
+        this.four = 'four'
+        next()
+      })
+
+      return superchain.run(req).then((data) => {
+        inspect(data).isEql({
+          one: 'one',
+          two: 'two',
+          four: 'four'
+        })
+      })
+    })
+
+    it('should share identical conditions', () => {
+      const req = {
+        path: '/foo'
+      }
+
+      superchain.add((ctx, next) => {
+        ctx.one = 'one'
+        next()
+      })
+
+      const condition = (ctx) => {
+        return ctx.path === '/foo'
+      }
+
+      superchain.when(condition).add((ctx, next) => {
+        ctx.two = 'two'
+        next()
+      })
+
+      superchain.when(condition).add((ctx, next) => {
+        ctx.three = 'three'
+        next()
+      })
+
+      superchain.when((ctx) => {
+        return ctx.path === '/bla'
+      }).add((ctx, next) => {
+        ctx.four = 'four'
+        next()
+      })
+
+      superchain.add((ctx, next) => {
+        ctx.five = 'five'
+        next()
+      })
+
+      return superchain.run(req).then(() => {
+        inspect(req).isEql({
+          path: '/foo',
+          one: 'one',
+          two: 'two',
+          three: 'three',
+          five: 'five'
         })
       })
     })

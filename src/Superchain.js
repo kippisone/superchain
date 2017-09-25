@@ -26,44 +26,42 @@ class Superchain {
 
     this.__final.push(link)
   }
-  
+
   when (condition) {
     if (this.__subChains.has(condition)) {
       return this.__subChains.get(condition)
     }
-    
+
     const subchain = new Superchain({
-      thisContext: this
+      thisContext: this.thisContext
     })
-    
+
     this.__subChains.set(condition, subchain)
-    
-    this.add(function conditionFn() {
+
+    this.add(function conditionFn () {
       const args = Array.prototype.slice.call(arguments, 0, -2)
-      const cont = condition.apply(this, args.slice(0, -2))
-      const next = args[arguments.length - 2]
-      
-      console.log('NEXT', next, args)
+      const cont = condition.apply(this.thisContext, args)
+      const next = arguments[arguments.length - 2]
+
       if (!cont) {
-        next()
+        return next()
       }
-      
-      const subCall = subchain.run.apply(this, args)
-      subCall.then(() => {
+
+      const subCall = subchain.run.apply(subchain, args)
+      subCall.then((data) => {
         next()
       }).catch((err) => {
         throw err
       })
-      
     })
-    
+
     return subchain
   }
-  
+
   run (ctx) {
     const args = Array.prototype.slice.call(arguments)
     const thisContext = this.thisContext
-    
+
     return new Promise((resolve, reject) => {
       const chain = [].concat(this.__chain, this.__final)
 
@@ -81,7 +79,7 @@ class Superchain {
             const finish = () => {
               return resolve(thisContext)
             }
-            
+
             fn.apply(thisContext, args.concat([next, finish]))
           }
         } catch (err) {
