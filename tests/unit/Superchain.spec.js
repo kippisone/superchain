@@ -419,6 +419,42 @@ describe('Superchain', () => {
         })
       })
     })
+
+    it('should get a own this context', () => {
+      const fn1 = sinon.spy(function (ctx, next) {
+        this.one = 'one'
+        next()
+      })
+      const fn2 = sinon.spy(function (ctx, next) {
+        this.two = 'two'
+        next()
+      })
+
+      superchain.add(fn1)
+      superchain.add(fn2)
+
+      const ctx = {}
+      const first = superchain.run(ctx)
+      inspect(first).isPromise()
+      return first.then((out) => {
+        inspect(fn1).wasCalledOnce()
+        inspect(fn1).wasCalledWith(ctx)
+        inspect(fn2).wasCalledOnce()
+        inspect(fn2).wasCalledWith(ctx)
+
+        const second = superchain.run(ctx)
+        return second.then((out) => {
+          inspect(fn1).wasCalledTwice()
+          inspect(fn1).wasCalledWith(ctx)
+          inspect(fn2).wasCalledTwice()
+          inspect(fn2).wasCalledWith(ctx)
+
+          inspect(fn1.getCall(0).thisValue).isEqual(fn2.getCall(0).thisValue)
+          inspect(fn1.getCall(0).thisValue).isNotEqual(fn1.getCall(1).thisValue)
+          inspect(fn2.getCall(0).thisValue).isNotEqual(fn2.getCall(1).thisValue)
+        })
+      })
+    })
   })
 
   describe('when()', () => {

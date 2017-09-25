@@ -7,7 +7,6 @@ class Superchain {
     conf = conf || {}
     this.__chain = []
     this.__final = []
-    this.thisContext = conf.thisContext || {}
     this.__subChains = new Map()
   }
 
@@ -32,23 +31,20 @@ class Superchain {
       return this.__subChains.get(condition)
     }
 
-    const thisContext = this.thisContext
-    const subchain = new Superchain({
-      thisContext: thisContext
-    })
+    const subchain = new Superchain()
 
     this.__subChains.set(condition, subchain)
 
     const conditionFn = function conditionFn () {
       const args = Array.prototype.slice.call(arguments, 0, -2)
-      const cont = condition.apply(thisContext, args)
+      const cont = condition.apply(this, args)
       const next = arguments[arguments.length - 2]
 
       if (!cont) {
         return next()
       }
 
-      const subCall = subchain.run.apply(subchain, args)
+      const subCall = subchain.runWith.apply(subchain, [this].concat(args))
       subCall.then((data) => {
         next()
       }).catch((err) => {
@@ -62,10 +58,14 @@ class Superchain {
 
     return subchain
   }
-
+  
   run (ctx) {
     const args = Array.prototype.slice.call(arguments)
-    const thisContext = this.thisContext
+    return this.runWith.apply(this, [{}].concat(args))
+  }
+
+  runWith (thisContext, ctx) {
+    const args = Array.prototype.slice.call(arguments, 1)
 
     return new Promise((resolve, reject) => {
       const chain = [].concat(this.__chain, this.__final)
