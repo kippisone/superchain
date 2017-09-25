@@ -2,7 +2,7 @@
   "name": "superchain",
   "version": "1.2.0",
   "description": "High performant middleware chain",
-  "main": "src/superchain.js",
+  "main": "src/Superchain.js",
   "author": "Andi Heinkelein <andifeind@noname-media.com>",
   "license": "MIT",
   "scripts": {
