@@ -549,6 +549,11 @@ describe('Superchain', () => {
           three: 'three',
           five: 'five'
         })
+
+        inspect(superchain.__chain[1]).hasKey('chain')
+        inspect(superchain.__chain[1].chain.__chain).isArray().hasLength(2)
+        inspect(superchain.__chain[1].chain.__chain[0]).isFunction()
+        inspect(superchain.__chain[1].chain.__chain[1]).isFunction()
       })
     })
   })

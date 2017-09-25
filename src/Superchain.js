@@ -32,15 +32,16 @@ class Superchain {
       return this.__subChains.get(condition)
     }
 
+    const thisContext = this.thisContext
     const subchain = new Superchain({
-      thisContext: this.thisContext
+      thisContext: thisContext
     })
 
     this.__subChains.set(condition, subchain)
 
-    this.add(function conditionFn () {
+    const conditionFn = function conditionFn () {
       const args = Array.prototype.slice.call(arguments, 0, -2)
-      const cont = condition.apply(this.thisContext, args)
+      const cont = condition.apply(thisContext, args)
       const next = arguments[arguments.length - 2]
 
       if (!cont) {
@@ -53,7 +54,11 @@ class Superchain {
       }).catch((err) => {
         throw err
       })
-    })
+    }
+
+    conditionFn.chain = subchain
+
+    this.add(conditionFn)
 
     return subchain
   }
