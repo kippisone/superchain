@@ -234,20 +234,21 @@ bucketchain.bucket('fooBucket')
 bucketchain.bucket('barBucket')
 
 fooBucket.add(async function () {
-  this.one = 'one'
+  this.output = ['one']
 })
 
 barBucket.add(async function () {
-  this.two = 'two'
+  this.output.push('two')
+})
+
+fooBucket.add(async function () {
+  this.output = ['three']
 })
 
 const result = bucketchain.run()
 result
   .then((ctx) => {
-    // ctx === {
-    //   one: 'one',
-    //   two: 'two'
-    // }
+    // ctx.output === ['one', 'three', 'two']
   })
   .catch((err) => {
     // called when any error happens
