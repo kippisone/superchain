@@ -124,5 +124,25 @@ describe('Bucketchain', () => {
         inspect(err.message).isEql('Cancel chain')
       })
     })
+
+    it('should run a chain one by one', () => {
+      const bc = new Bucketchain()
+      bc.bucket('fooBucket')
+      bc.bucket('barBucket')
+      bc.bucket('blaBucket')
+
+      bc.fooBucket.add(function (next) { this.output = ['one']; next() })
+      bc.barBucket.add(function (next) { this.output.push('two'); next() })
+      bc.blaBucket.add(function (next) { this.output.push('three'); next() })
+      bc.fooBucket.add(function (next) { this.output.push('four'); next() })
+      bc.barBucket.add(function (next) { this.output.push('five'); next() })
+
+      const bcRun = bc.run()
+      inspect(bcRun).isPromise()
+      return bcRun.then((res) => {
+        inspect(res.output).isArray()
+        inspect(res.output).isEql(['one', 'four', 'two', 'five', 'three'])
+      })
+    })
   })
 })
