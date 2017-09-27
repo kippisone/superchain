@@ -43,6 +43,16 @@ describe('Bucketchain', () => {
     })
   })
 
+  describe('errorBucket()', () => {
+    it('should add an error bucket to the bucket-chain', () => {
+      const bc = new Bucketchain()
+      bc.errorBucket('errBucket')
+      inspect(bc.errBucket).isObject()
+      inspect(bc.errBucket).isEqual(bc.__errorBucket)
+      inspect(bc.__errorBucket).isInstanceOf(Superchain)
+    })
+  })
+
   describe('run()', () => {
     it('should run a bucket-chain', () => {
       const bc = new Bucketchain()
@@ -142,6 +152,29 @@ describe('Bucketchain', () => {
       return bcRun.then((res) => {
         inspect(res.output).isArray()
         inspect(res.output).isEql(['one', 'four', 'two', 'five', 'three'])
+      })
+    })
+
+    it('should jump into an error chain', () => {
+      const bc = new Bucketchain()
+      bc.bucket('fooBucket')
+      bc.bucket('barBucket')
+      bc.bucket('blaBucket')
+      bc.errorBucket('errBucket')
+
+      bc.fooBucket.add(function (next) { this.output = ['one']; next() })
+      bc.barBucket.add(function (next) { throw new Error('Chain failed') })
+      bc.blaBucket.add(function (next) { this.output.push('three'); next() })
+      bc.fooBucket.add(function (next) { this.output.push('four'); next() })
+      bc.barBucket.add(function (next) { this.output.push('five'); next() })
+      bc.errBucket.add(function (next) { this.output.push('err'); next() })
+      bc.errBucket.add(function (next) { this.output.push('err2'); next() })
+
+      const bcRun = bc.run()
+      inspect(bcRun).isPromise()
+      return bcRun.then((res) => {
+        inspect(res.output).isArray()
+        inspect(res.output).isEql(['one', 'four', 'err', 'err2'])
       })
     })
   })

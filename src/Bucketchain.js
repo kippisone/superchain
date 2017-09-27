@@ -15,6 +15,7 @@ class Bucketchain {
    * @return {object}            Returns this value
    */
   bucket (bucketName) {
+    if (typeof this[bucketName] === 'function') throw new Error(`Bucket name ${bucketName} not allowed!`)
     const chain = new Superchain()
     this.__buckets.push(chain)
     this[bucketName] = chain
@@ -22,8 +23,9 @@ class Bucketchain {
   }
 
   errorBucket (bucketName) {
+    if (typeof this[bucketName] === 'function') throw new Error(`Bucket name ${bucketName} not allowed!`)
     const chain = new Superchain()
-    this.__errorBuckets = chain
+    this.__errorBucket = chain
     this[bucketName] = chain
     return this
   }
@@ -42,7 +44,17 @@ class Bucketchain {
           .then(() => {
             next()
           }).catch((err) => {
-            reject(err)
+            if (this.__errorBucket) {
+              this.__errorBucket.runWith.apply(this.__errorBucket, [thisContext].concat(args))
+                .then(() => {
+                  resolve(thisContext)
+                })
+                .catch((err) => {
+                  reject(err)
+                })
+            } else {
+              reject(err)
+            }
           })
       }
 
