@@ -58,7 +58,7 @@ class Superchain {
 
     return subchain
   }
-  
+
   run (ctx) {
     const args = Array.prototype.slice.call(arguments)
     return this.runWith.apply(this, [{}].concat(args))

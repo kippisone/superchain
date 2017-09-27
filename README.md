@@ -222,3 +222,34 @@ result
   })
 
 ```
+
+### Bucket chain
+
+A Bucketchain is a chain of buckets, each bucket contains one chain.
+Whenever a bucket chain starts, it runs the chain from first bucket and refers then to the second bucket. If any error occurs, the chain is canceld and the final promise gets rejected.
+
+```js
+const bucketchain = new Buckecchain()
+bucketchain.bucket('fooBucket')
+bucketchain.bucket('barBucket')
+
+fooBucket.add(async function () {
+  this.one = 'one'
+})
+
+barBucket.add(async function () {
+  this.two = 'two'
+})
+
+const result = bucketchain.run()
+result
+  .then((ctx) => {
+    // ctx === {
+    //   one: 'one',
+    //   two: 'two'
+    // }
+  })
+  .catch((err) => {
+    // called when any error happens
+  })
+```
