@@ -11,15 +11,14 @@ class Bucketchain {
    * Create new bucket in the bucket-chain
    * @param  {string} bucketName Bucket name
    *
-   * @chainable
-   * @return {object}            Returns this value
+   * @return {object} Returns the new chain instance
    */
   bucket (bucketName) {
     if (typeof this[bucketName] === 'function') throw new Error(`Bucket name ${bucketName} not allowed!`)
     const chain = new Superchain()
     this.__buckets.push(chain)
     this[bucketName] = chain
-    return this
+    return chain
   }
 
   errorBucket (bucketName) {
@@ -27,7 +26,7 @@ class Bucketchain {
     const chain = new Superchain()
     this.__errorBucket = chain
     this[bucketName] = chain
-    return this
+    return chain
   }
 
   run () {
