@@ -5,9 +5,7 @@ const co = require('co-utils')
 class Superchain {
   constructor (conf) {
     conf = conf || {}
-    this.__chain = []
-    this.__final = []
-    this.__subChains = new Map()
+    this.clear()
   }
 
   add (link) {
@@ -105,6 +103,12 @@ class Superchain {
     }
 
     return type
+  }
+
+  clear () {
+    this.__chain = []
+    this.__final = []
+    this.__subChains = new Map()
   }
 }
 

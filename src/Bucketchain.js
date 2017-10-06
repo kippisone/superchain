@@ -4,7 +4,7 @@ const Superchain = require('./Superchain')
 
 class Bucketchain {
   constructor () {
-    this.__buckets = []
+    this.__buckets = new Map()
   }
 
   /**
@@ -16,9 +16,19 @@ class Bucketchain {
   bucket (bucketName) {
     if (typeof this[bucketName] === 'function') throw new Error(`Bucket name ${bucketName} not allowed!`)
     const chain = new Superchain()
-    this.__buckets.push(chain)
+    this.__buckets.set(bucketName, chain)
     this[bucketName] = chain
     return chain
+  }
+
+  /**
+   * Returns a bucket by its name
+   *
+   * @param  {string} bucketName Bucket name
+   * @return {object}            Returns a Bucket, which is a Superchain instance
+   */
+  get (bucketName) {
+    return this.__buckets.get(bucketName)
   }
 
   errorBucket (bucketName) {
@@ -32,14 +42,14 @@ class Bucketchain {
   run () {
     const args = Array.prototype.slice.call(arguments)
     return new Promise((resolve, reject) => {
-      let i = 0
       const thisContext = {}
+      const buckets = this.__buckets.entries()
 
       const next = () => {
-        const chain = this.__buckets[i]
-        if (!chain) return resolve(thisContext)
-        i += 1
-        chain.runWith.apply(chain, [thisContext].concat(args))
+        const chain = buckets.next()
+        if (chain.done) return resolve(thisContext)
+        const chainObj = chain.value[1]
+        chainObj.runWith.apply(chainObj, [thisContext].concat(args))
           .then(() => {
             next()
           }).catch((err) => {
