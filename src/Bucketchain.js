@@ -70,6 +70,14 @@ class Bucketchain {
       next()
     })
   }
+
+  clear (bucketName) {
+    this.__buckets.forEach((chain, key) => {
+      if (!bucketName || bucketName === key) {
+        chain.clear()
+      }
+    })
+  }
 }
 
 module.exports = Bucketchain
