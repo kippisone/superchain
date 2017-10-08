@@ -79,7 +79,7 @@ class Bucketchain {
     })
 
     if (!bucketName) {
-      this.__errorBucket = null
+      this.__errorBucket.clear()
     }
   }
 }

@@ -68,6 +68,7 @@ class Superchain {
   runWith (thisContext, ctx) {
     const args = Array.prototype.slice.call(arguments, 1)
 
+    thisContext.__chainErr = null
     thisContext.cancelChain = function cancelChain (err) {
       this.__chainErr = err
     }
