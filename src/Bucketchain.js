@@ -54,7 +54,7 @@ class Bucketchain {
             next()
           }).catch((err) => {
             if (this.__errorBucket) {
-              this.__errorBucket.runWith.apply(this.__errorBucket, [thisContext].concat(args))
+              this.__errorBucket.runWith.apply(this.__errorBucket, [thisContext, err].concat(args))
                 .then(() => {
                   resolve(thisContext)
                 })
@@ -77,6 +77,10 @@ class Bucketchain {
         chain.clear()
       }
     })
+
+    if (!bucketName) {
+      this.__errorBucket = null
+    }
   }
 }
 

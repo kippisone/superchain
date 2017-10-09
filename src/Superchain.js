@@ -30,6 +30,7 @@ class Superchain {
     }
 
     const subchain = new Superchain()
+    let thisContext
 
     this.__subChains.set(condition, subchain)
 
@@ -37,16 +38,18 @@ class Superchain {
       const args = Array.prototype.slice.call(arguments, 0, -2)
       const cont = condition.apply(this, args)
       const next = arguments[arguments.length - 2]
+      thisContext = this
 
       if (!cont) {
         return next()
       }
 
-      const subCall = subchain.runWith.apply(subchain, [this].concat(args))
+      const subCall = subchain.runWith.apply(subchain, [thisContext].concat(args))
       subCall.then((data) => {
         next()
       }).catch((err) => {
-        throw err
+        thisContext.cancelChain(err)
+        next()
       })
     }
 
@@ -65,11 +68,19 @@ class Superchain {
   runWith (thisContext, ctx) {
     const args = Array.prototype.slice.call(arguments, 1)
 
+    thisContext.cancelChain = function cancelChain (err) {
+      this.__chainErr = err
+    }
+
     return new Promise((resolve, reject) => {
       const chain = [].concat(this.__chain, this.__final)
 
       let i = 0
       const next = () => {
+        if (thisContext.__chainErr) {
+          return reject(thisContext.__chainErr)
+        }
+
         const fn = chain[i]
         if (!fn) return resolve(thisContext)
         i += 1

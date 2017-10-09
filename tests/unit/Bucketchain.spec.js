@@ -68,7 +68,7 @@ describe('Bucketchain', () => {
       inspect(bcRun).isPromise()
       return bcRun.then((res) => {
         inspect(res).isObject()
-        inspect(res).isEql({
+        inspect(res).hasProps({
           one: 'one',
           two: 'two',
           three: 'three'
@@ -96,7 +96,7 @@ describe('Bucketchain', () => {
       inspect(bcRun).isPromise()
       return bcRun.then((res) => {
         inspect(res).isObject()
-        inspect(res).isEql({
+        inspect(res).hasProps({
           one: 'one',
           two: 'two',
           three: 'three'
@@ -167,8 +167,8 @@ describe('Bucketchain', () => {
       bc.blaBucket.add(function (next) { this.output.push('three'); next() })
       bc.fooBucket.add(function (next) { this.output.push('four'); next() })
       bc.barBucket.add(function (next) { this.output.push('five'); next() })
-      bc.errBucket.add(function (next) { this.output.push('err'); next() })
-      bc.errBucket.add(function (next) { this.output.push('err2'); next() })
+      bc.errBucket.add(function (err, next) { this.output.push('err'); next() }) // eslint-disable-line handle-callback-err
+      bc.errBucket.add(function (err, next) { this.output.push('err2'); next() }) // eslint-disable-line handle-callback-err
 
       const bcRun = bc.run()
       inspect(bcRun).isPromise()

@@ -233,7 +233,7 @@ describe('Superchain', () => {
       const res = superchain.run(ctx)
       inspect(res).isPromise()
       return res.then((out) => {
-        inspect(out).isEql({
+        inspect(out).hasProps({
           one: 'one',
           two: 'two',
           three: 'three',
@@ -420,7 +420,7 @@ describe('Superchain', () => {
       })
     })
 
-    it('should get a own this context', () => {
+    it('should get an own this context', () => {
       const fn1 = sinon.spy(function (ctx, next) {
         this.one = 'one'
         next()
@@ -533,7 +533,7 @@ describe('Superchain', () => {
       })
 
       return superchain.run(req).then((data) => {
-        inspect(data).isEql({
+        inspect(data).hasProps({
           one: 'one',
           two: 'two',
           four: 'four'
