@@ -14,7 +14,6 @@ class Bucketchain {
    * @return {object} Returns the new chain instance
    */
   bucket (bucketName) {
-    if (typeof this[bucketName] === 'function') throw new Error(`Bucket name ${bucketName} not allowed!`)
     const chain = new Superchain()
     this.__buckets.set(bucketName, chain)
     return chain
@@ -31,7 +30,6 @@ class Bucketchain {
   }
 
   errorBucket (bucketName) {
-    if (typeof this[bucketName] === 'function') throw new Error(`Bucket name ${bucketName} not allowed!`)
     const chain = new Superchain()
     this.__errorBucket = chain
     return chain
