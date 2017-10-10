@@ -17,7 +17,6 @@ class Bucketchain {
     if (typeof this[bucketName] === 'function') throw new Error(`Bucket name ${bucketName} not allowed!`)
     const chain = new Superchain()
     this.__buckets.set(bucketName, chain)
-    this[bucketName] = chain
     return chain
   }
 
@@ -35,7 +34,6 @@ class Bucketchain {
     if (typeof this[bucketName] === 'function') throw new Error(`Bucket name ${bucketName} not allowed!`)
     const chain = new Superchain()
     this.__errorBucket = chain
-    this[bucketName] = chain
     return chain
   }
 
