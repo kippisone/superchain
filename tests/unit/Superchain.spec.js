@@ -4,7 +4,7 @@ const inspect = require('inspect.js')
 const sinon = require('sinon')
 inspect.useSinon(sinon)
 
-const Superchain = require('../../src/Superchain')
+const Superchain = require('../../').Superchain
 
 function isAsyncSupported () {
   try {

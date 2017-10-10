@@ -1,8 +1,8 @@
 'use strict'
 
 const inspect = require('inspect.js')
-const Bucketchain = require('../../src/Bucketchain')
-const Superchain = require('../../src/Superchain')
+const Bucketchain = require('../../').Bucketchain
+const Superchain = require('../../').Superchain
 
 describe('Bucketchain', () => {
   describe('class', () => {

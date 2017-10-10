@@ -229,6 +229,8 @@ A Bucketchain is a chain of buckets, each bucket contains one chain.
 Whenever a bucket chain starts, it runs the chain from first bucket and refers then to the second bucket. If any error occurs, the chain is canceld and the final promise gets rejected.
 
 ```js
+import { Bucketchain } from 'superchain'
+
 const bucketchain = new Buckecchain()
 const fooBucket = bucketchain.bucket('fooBucket')
 const barBucket = bucketchain.bucket('barBucket')
