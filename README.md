@@ -230,8 +230,8 @@ Whenever a bucket chain starts, it runs the chain from first bucket and refers t
 
 ```js
 const bucketchain = new Buckecchain()
-bucketchain.bucket('fooBucket')
-bucketchain.bucket('barBucket')
+const fooBucket = bucketchain.bucket('fooBucket')
+const barBucket = bucketchain.bucket('barBucket')
 
 fooBucket.add(async function () {
   this.output = ['one']
