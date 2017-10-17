@@ -13,12 +13,20 @@ class Superchain {
       throw new TypeError(`Unsupported chain-link type. Only functions are allowed. Input value was ${this.getLinkType(link)}`)
     }
 
+    if (link.constructor.name === 'GeneratorFunction') {
+      return this.__chain.push(co.wrap(link))
+    }
+
     this.__chain.push(link)
   }
 
   final (link) {
     if (typeof link !== 'function') {
       throw new TypeError(`Unsupported chain-link type. Only functions are allowed. Input value was ${this.getLinkType(link)}`)
+    }
+
+    if (link.constructor.name === 'GeneratorFunction') {
+      return this.__final.push(co.wrap(link))
     }
 
     this.__final.push(link)
@@ -68,48 +76,65 @@ class Superchain {
   runWith (thisContext, ctx) {
     const args = Array.prototype.slice.call(arguments, 1)
 
-    thisContext.__chainErr = null
+    let __chainErr = null
     thisContext.cancelChain = function cancelChain (err) {
       this.__chainErr = err
     }
 
-    return new Promise((resolve, reject) => {
-      const chain = [].concat(this.__chain, this.__final)
+    const chain = [].concat(this.__chain, this.__final)
 
-      let i = 0
-      const next = () => {
-        if (thisContext.__chainErr) {
-          return reject(thisContext.__chainErr)
+    let i = 0
+    const next = () => {
+      return new Promise((resolve, reject) => {
+        if (__chainErr) {
+          return reject(__chainErr)
         }
 
         const fn = chain[i]
         if (!fn) return resolve(thisContext)
         i += 1
         try {
-          if (fn.constructor.name === 'GeneratorFunction') {
-            co(fn.bind.apply(fn, [thisContext].concat(args, [next]))).then((res) => {}).catch((err) => reject(err))
-          } else if (fn.constructor.name === 'AsyncFunction') {
-            fn.apply(thisContext, args.concat([next])).then((res) => {}).catch((err) => reject(err))
-          } else {
-            const finish = () => {
-              return resolve(thisContext)
+          let thenCalled = false
+          const nextFn = () => {
+            return {
+              then (fn) {
+                thenCalled = true
+                return next().then(fn)
+              }
             }
+          }
 
-            const p = fn.apply(thisContext, args.concat([next, finish]))
-            if (p && p.then && p.catch) {
-              p.then((res) => {
-              }).catch((err) => {
-                reject(err)
-              })
-            }
+          nextFn.resolve = () => {
+            resolve(thisContext)
+          }
+
+          let p
+
+          const exit = () => {
+            return resolve(thisContext)
+          }
+
+          p = fn.apply(thisContext, args.concat([nextFn, exit]))
+
+          if (p && p.then && p.catch) {
+            p.then((res) => {
+              if (thenCalled) {
+                return resolve(thisContext)
+              }
+              next().then(() => resolve(thisContext))
+            }).catch((err) => {
+              reject(err)
+            })
+          } else {
+            next().then(() => resolve(thisContext))
           }
         } catch (err) {
           return reject(err)
         }
-      }
+      })
+    }
 
-      next()
-    })
+    return next()
   }
 
   getLinkType (link) {
