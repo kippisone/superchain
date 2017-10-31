@@ -256,3 +256,23 @@ result
     // called when any error happens
   })
 ```
+
+### Next chain
+
+```js
+chain.add(async (ctx, next) => {
+  console.log('One')
+  await next()
+  console.log('Five')
+})
+
+chain.add(async (ctx, next) => {
+  console.log('Two')
+  next()
+  console.log('Four')
+})
+
+chain.add(async (ctx, next) => {
+  console.log('Three')
+})
+```
