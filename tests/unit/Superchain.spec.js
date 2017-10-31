@@ -530,7 +530,7 @@ describe('Superchain', () => {
       })
     })
 
-    it('should run next async link on await next()', () => {
+    it('should run next async link on await next()', function testFn () {
       if (!isAsyncSupported()) {
         this.test.title = `(SKIP TEST: async functions not supported by current Node version!) ${this.test.title})`
         this.skip()
