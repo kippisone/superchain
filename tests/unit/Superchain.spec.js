@@ -95,7 +95,8 @@ describe('Superchain', () => {
       superchain.add(fn2)
       superchain.add(fn3)
 
-      inspect(superchain.__chain).isEql([fn, fn2, fn3])
+      inspect(superchain.__chain).isNotEql([fn, fn2, fn3])
+      inspect(superchain.__chain).isEql([inspect.match.func, inspect.match.func, inspect.match.func])
     })
 
     it('adds an async function to the chain', function () {
@@ -108,6 +109,17 @@ describe('Superchain', () => {
       const fn = eval('(async function () {})') // eslint-disable-line no-eval
       const fn2 = eval('(async function () {})') // eslint-disable-line no-eval
       const fn3 = eval('(async function () {})') // eslint-disable-line no-eval
+      superchain.add(fn)
+      superchain.add(fn2)
+      superchain.add(fn3)
+
+      inspect(superchain.__chain).isEql([fn, fn2, fn3])
+    })
+
+    it('adds an promise returning function to the chain', function () {
+      const fn = () => { return Promise.resolve() }
+      const fn2 = () => { return Promise.resolve() }
+      const fn3 = () => { return Promise.resolve() }
       superchain.add(fn)
       superchain.add(fn2)
       superchain.add(fn3)
@@ -149,7 +161,8 @@ describe('Superchain', () => {
       superchain.final(fn2)
       superchain.final(fn3)
 
-      inspect(superchain.__final).isEql([fn, fn2, fn3])
+      inspect(superchain.__final).isNotEql([fn, fn2, fn3])
+      inspect(superchain.__final).isEql([inspect.match.func, inspect.match.func, inspect.match.func])
     })
 
     it('adds an async function to the chain', function () {
@@ -211,6 +224,39 @@ describe('Superchain', () => {
     })
 
     it('should run all chain-links, using generators', () => {
+      const fn1 = function * (ctx, next) { yield {}; this.one = ctx.one; yield next() }
+      const fn2 = function * (ctx, next) { yield {}; this.two = ctx.two; yield next() }
+      const fn3 = function * (ctx, next) { yield {}; this.three = ctx.three; yield next() }
+      const fn4 = function * (ctx, next) { yield {}; this.four = ctx.four; yield next() }
+      const fn5 = function * (ctx, next) { yield {}; this.five = ctx.five; yield next() }
+
+      superchain.add(fn1)
+      superchain.add(fn2)
+      superchain.add(fn3)
+      superchain.add(fn4)
+      superchain.add(fn5)
+
+      const ctx = {
+        one: 'one',
+        two: 'two',
+        three: 'three',
+        four: 'four',
+        five: 'five'
+      }
+      const res = superchain.run(ctx)
+      inspect(res).isPromise()
+      return res.then((out) => {
+        inspect(out).hasProps({
+          one: 'one',
+          two: 'two',
+          three: 'three',
+          four: 'four',
+          five: 'five'
+        })
+      })
+    })
+
+    it('should run all chain-links, using generators, without yield next()', () => {
       const fn1 = function * (ctx, next) { yield {}; this.one = ctx.one; next() }
       const fn2 = function * (ctx, next) { yield {}; this.two = ctx.two; next() }
       const fn3 = function * (ctx, next) { yield {}; this.three = ctx.three; next() }
@@ -453,6 +499,96 @@ describe('Superchain', () => {
           inspect(fn1.getCall(0).thisValue).isNotEqual(fn1.getCall(1).thisValue)
           inspect(fn2.getCall(0).thisValue).isNotEqual(fn2.getCall(1).thisValue)
         })
+      })
+    })
+
+    it('should run next promise returning link on next().then()', () => {
+      const fn1 = function (ctx, next) { ctx.chain.push('one'); return next().then(() => { ctx.chain.push('ten') }) }
+      const fn2 = function (ctx, next) { ctx.chain.push('two'); return next().then(() => { ctx.chain.push('nine') }) }
+      const fn3 = function (ctx, next) { ctx.chain.push('three'); return next().then(() => { ctx.chain.push('eight') }) }
+      const fn4 = function (ctx, next) { ctx.chain.push('four'); return next().then(() => { ctx.chain.push('seven') }) }
+      const fn5 = function (ctx, next) { ctx.chain.push('five'); return next().then(() => { ctx.chain.push('six') }) }
+
+      superchain.add(fn1)
+      superchain.add(fn2)
+      superchain.add(fn3)
+      superchain.add(fn4)
+      superchain.add(fn5)
+
+      const ctx = {
+        chain: []
+      }
+
+      const res = superchain.run(ctx)
+      inspect(res).isPromise()
+      return res.then(() => {
+        inspect(ctx.chain).isEql([
+          'one', 'two', 'three',
+          'four', 'five', 'six', 'seven',
+          'eight', 'nine', 'ten'
+        ])
+      })
+    })
+
+    it('should run next async link on await next()', () => {
+      if (!isAsyncSupported()) {
+        this.test.title = `(SKIP TEST: async functions not supported by current Node version!) ${this.test.title})`
+        this.skip()
+        return
+      }
+
+      const fn1 = eval('(async function (ctx, next) { ctx.chain.push(\'one\'); await next(); ctx.chain.push(\'ten\') })')
+      const fn2 = eval('(async function (ctx, next) { ctx.chain.push(\'two\'); await next(); ctx.chain.push(\'nine\') })')
+      const fn3 = eval('(async function (ctx, next) { ctx.chain.push(\'three\'); await next(); ctx.chain.push(\'eight\') })')
+      const fn4 = eval('(async function (ctx, next) { ctx.chain.push(\'four\'); await next(); ctx.chain.push(\'seven\') })')
+      const fn5 = eval('(async function (ctx, next) { ctx.chain.push(\'five\'); await next(); ctx.chain.push(\'six\') })')
+
+      superchain.add(fn1)
+      superchain.add(fn2)
+      superchain.add(fn3)
+      superchain.add(fn4)
+      superchain.add(fn5)
+
+      const ctx = {
+        chain: []
+      }
+
+      const res = superchain.run(ctx)
+      inspect(res).isPromise()
+      return res.then(() => {
+        inspect(ctx.chain).isEql([
+          'one', 'two', 'three',
+          'four', 'five', 'six', 'seven',
+          'eight', 'nine', 'ten'
+        ])
+      })
+    })
+
+    it('should run next callback link on return next().then()', () => {
+      const fn1 = function (ctx, next) { ctx.chain.push('one'); next().then(() => { ctx.chain.push('ten') }) }
+      const fn2 = function (ctx, next) { ctx.chain.push('two'); next().then(() => { ctx.chain.push('nine') }) }
+      const fn3 = function (ctx, next) { ctx.chain.push('three'); next().then(() => { ctx.chain.push('eight') }) }
+      const fn4 = function (ctx, next) { ctx.chain.push('four'); next().then(() => { ctx.chain.push('seven') }) }
+      const fn5 = function (ctx, next) { ctx.chain.push('five'); next().then(() => { ctx.chain.push('six') }) }
+
+      superchain.add(fn1)
+      superchain.add(fn2)
+      superchain.add(fn3)
+      superchain.add(fn4)
+      superchain.add(fn5)
+
+      const ctx = {
+        chain: []
+      }
+
+      const res = superchain.run(ctx)
+      inspect(res).isPromise()
+      return res.then(() => {
+        inspect(ctx.chain).isEql([
+          'one', 'two', 'three',
+          'four', 'five', 'six', 'seven',
+          'eight', 'nine', 'ten'
+        ])
       })
     })
   })
