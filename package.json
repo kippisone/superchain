@@ -29,9 +29,9 @@
     "@noname-media/eslint-config-standard": "1.1.0",
     "inspect.js": "1.9.0",
     "lagoon-reporter": "0.3.4",
-    "mocha": "3.5.3",
-    "sinon": "3.3.0",
-    "testberry": "^0.1.0"
+    "mocha": "^4.0.1",
+    "sinon": "^4.0.2",
+    "testberry": "^0.1.1"
   },
   "dependencies": {
     "co-utils": "^0.3.1"
