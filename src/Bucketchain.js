@@ -5,6 +5,7 @@ const Superchain = require('./Superchain')
 class Bucketchain {
   constructor () {
     this.__buckets = new Map()
+    this.debug = false
   }
 
   /**
@@ -14,7 +15,15 @@ class Bucketchain {
    * @return {object} Returns the new chain instance
    */
   bucket (bucketName) {
-    const chain = new Superchain()
+    const chain = new Superchain({
+      name: bucketName
+    })
+
+    if (this.debug) {
+      chain.debug = true
+      console.log('[Superchain] Create bucket', bucketName)
+    }
+
     this.__buckets.set(bucketName, chain)
     return chain
   }
@@ -30,7 +39,15 @@ class Bucketchain {
   }
 
   errorBucket (bucketName) {
-    const chain = new Superchain()
+    const chain = new Superchain({
+      name: bucketName
+    })
+
+    if (this.debug) {
+      chain.debug = true
+      console.log('[Superchain] Create error bucket', bucketName)
+    }
+
     this.__errorBucket = chain
     return chain
   }
@@ -61,6 +78,10 @@ class Bucketchain {
               reject(err)
             }
           })
+      }
+
+      if (this.debug) {
+        console.log('[Superchain] Run bucket chain')
       }
 
       next()

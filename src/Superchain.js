@@ -6,6 +6,8 @@ class Superchain {
   constructor (conf) {
     conf = conf || {}
     this.clear()
+    this.debug = false
+    this.name = conf.name || ''
   }
 
   add (link) {
@@ -15,6 +17,10 @@ class Superchain {
 
     if (link.constructor.name === 'GeneratorFunction') {
       return this.__chain.push(co.wrap(link))
+    }
+
+    if (this.debug) {
+      console.log('[Superchain] Add link to chain', this.name, link.name)
     }
 
     this.__chain.push(link)
@@ -27,6 +33,10 @@ class Superchain {
 
     if (link.constructor.name === 'GeneratorFunction') {
       return this.__final.push(co.wrap(link))
+    }
+
+    if (this.debug) {
+      console.log('[Superchain] Add final link to chain', this.name, link.name)
     }
 
     this.__final.push(link)
@@ -91,6 +101,11 @@ class Superchain {
         }
 
         const fn = chain[i]
+
+        if (this.debug) {
+          console.log('[Superchain] Run chain link', this.name, fn.name)
+        }
+
         if (!fn) return resolve(thisContext)
         i += 1
         try {
@@ -110,11 +125,11 @@ class Superchain {
 
           let p
 
-          const exit = () => {
+          const exitFn = () => {
             return resolve(thisContext)
           }
 
-          p = fn.apply(thisContext, args.concat([nextFn, exit]))
+          p = fn.apply(thisContext, args.concat([nextFn, exitFn]))
 
           if (p && p.then && p.catch) {
             p.then((res) => {
@@ -132,6 +147,10 @@ class Superchain {
           return reject(err)
         }
       })
+    }
+
+    if (this.debug) {
+      console.log('[Superchain] Run chain', this.name)
     }
 
     return next()

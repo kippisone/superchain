@@ -276,3 +276,17 @@ chain.add(async (ctx, next) => {
   console.log('Three')
 })
 ```
+
+### Debugging
+
+Superchain has a simple debugging mode. Enable it by setting debug to `true`
+
+```js
+const chain = new Superchain()
+chain.debug = true
+
+// or for a Bucketchan
+
+const chain = new Bucketchain()
+chain.debug = true
+```
