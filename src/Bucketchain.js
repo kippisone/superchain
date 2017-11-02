@@ -64,8 +64,10 @@ class Bucketchain {
         const chainObj = chain.value[1]
         chainObj.runWith.apply(chainObj, [thisContext].concat(args))
           .then(() => {
+            console.log('CHAIN FIN', thisContext)
             next()
           }).catch((err) => {
+            console.log('CHAIN ERR', err)
             if (this.__errorBucket) {
               this.__errorBucket.runWith.apply(this.__errorBucket, [thisContext, err].concat(args))
                 .then(() => {

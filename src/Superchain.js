@@ -86,6 +86,7 @@ class Superchain {
   runWith (thisContext, ctx) {
     const args = Array.prototype.slice.call(arguments, 1)
 
+    thisContext.__exitChain = false
     let __chainErr = null
     thisContext.cancelChain = function cancelChain (err) {
       this.__chainErr = err
@@ -94,55 +95,52 @@ class Superchain {
     const chain = [].concat(this.__chain, this.__final)
 
     let i = 0
+    const self = this
     const next = () => {
       return new Promise((resolve, reject) => {
         if (__chainErr) {
           return reject(__chainErr)
         }
 
+        if (thisContext.__exitChain) {
+          if (this.debug) {
+            console.log('[Superchain] Exit chain (fn)', this.name)
+          }
+
+          return resolve(thisContext)
+        }
+
         const fn = chain[i]
+
+        if (!fn) {
+          return resolve(thisContext)
+        }
 
         if (this.debug) {
           console.log('[Superchain] Run chain link', this.name, fn.name)
         }
 
-        if (!fn) return resolve(thisContext)
         i += 1
         try {
-          let thenCalled = false
-          const nextFn = () => {
-            return {
-              then (fn) {
-                thenCalled = true
-                return next().then(fn)
-              }
-            }
-          }
-
-          nextFn.resolve = () => {
-            resolve(thisContext)
-          }
-
-          let p
-
-          const exitFn = () => {
-            return resolve(thisContext)
-          }
-
-          p = fn.apply(thisContext, args.concat([nextFn, exitFn]))
-
-          if (p && p.then && p.catch) {
-            p.then((res) => {
-              if (thenCalled) {
-                return resolve(thisContext)
-              }
-              next().then(() => resolve(thisContext))
+          const nextFn = function nextFunc () {
+            return next().then((res) => {
+              resolve(res)
+              return res
             }).catch((err) => {
               reject(err)
             })
-          } else {
-            next().then(() => resolve(thisContext))
           }
+
+          const exitFn = function exitFn () {
+            if (self.debug) {
+              console.log('[Superchain] Exit chain', self.name)
+            }
+
+            self.__exitChain = true
+            return resolve(thisContext)
+          }
+
+          fn.apply(thisContext, args.concat([nextFn, exitFn]))
         } catch (err) {
           return reject(err)
         }
@@ -153,7 +151,10 @@ class Superchain {
       console.log('[Superchain] Run chain', this.name)
     }
 
-    return next()
+    return next().then((res) => {
+      console.log('FIN', res)
+      return res
+    })
   }
 
   getLinkType (link) {
@@ -168,6 +169,10 @@ class Superchain {
   }
 
   clear () {
+    if (this.debug) {
+      console.log('[Superchain] Run chain', this.name)
+    }
+
     this.__chain = []
     this.__final = []
     this.__subChains = new Map()
