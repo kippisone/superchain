@@ -59,15 +59,17 @@ class Bucketchain {
       const buckets = this.__buckets.entries()
 
       const next = () => {
+        if (thisContext.__exitChain) {
+          return this.__chainErr ? reject(this.__chainErr) : resolve(thisContext)
+        }
+
         const chain = buckets.next()
         if (chain.done) return resolve(thisContext)
         const chainObj = chain.value[1]
         chainObj.runWith.apply(chainObj, [thisContext].concat(args))
           .then(() => {
-            console.log('CHAIN FIN', thisContext)
             next()
           }).catch((err) => {
-            console.log('CHAIN ERR', err)
             if (this.__errorBucket) {
               this.__errorBucket.runWith.apply(this.__errorBucket, [thisContext, err].concat(args))
                 .then(() => {

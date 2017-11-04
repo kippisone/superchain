@@ -503,6 +503,33 @@ describe('Superchain', () => {
     })
 
     it('should run next promise returning link on next().then()', () => {
+      const fn1 = function (ctx, next) { ctx.chain.push('one'); return next() }
+      const fn2 = function (ctx, next) { ctx.chain.push('two'); return next() }
+      const fn3 = function (ctx, next) { ctx.chain.push('three'); return next() }
+      const fn4 = function (ctx, next) { ctx.chain.push('four'); return next() }
+      const fn5 = function (ctx, next, exit) { ctx.chain.push('five'); exit() }
+
+      superchain.add(fn1)
+      superchain.add(fn2)
+      superchain.add(fn3)
+      superchain.add(fn4)
+      superchain.add(fn5)
+
+      const ctx = {
+        chain: []
+      }
+
+      const res = superchain.run(ctx)
+      inspect(res).isPromise()
+      return res.then(() => {
+        inspect(ctx.chain).isEql([
+          'one', 'two', 'three',
+          'four', 'five'
+        ])
+      })
+    })
+
+    it('should run next promise returning link on next().then()', () => {
       const fn1 = function (ctx, next) { ctx.chain.push('one'); return next().then(() => { ctx.chain.push('ten') }) }
       const fn2 = function (ctx, next) { ctx.chain.push('two'); return next().then(() => { ctx.chain.push('nine') }) }
       const fn3 = function (ctx, next) { ctx.chain.push('three'); return next().then(() => { ctx.chain.push('eight') }) }
@@ -522,7 +549,6 @@ describe('Superchain', () => {
       const res = superchain.run(ctx)
       inspect(res).isPromise()
       return res.then(() => {
-        console.log('CH', ctx.chain)
         inspect(ctx.chain).isEql([
           'one', 'two', 'three',
           'four', 'five', 'six', 'seven',
@@ -585,7 +611,6 @@ describe('Superchain', () => {
       const res = superchain.run(ctx)
       inspect(res).isPromise()
       return res.then(() => {
-        console.log(ctx.chain)
         inspect(ctx.chain).isEql([
           'one', 'two', 'three',
           'four', 'five', 'six', 'seven',

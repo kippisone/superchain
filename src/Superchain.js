@@ -92,7 +92,9 @@ class Superchain {
       this.__chainErr = err
     }
 
-    const chain = [].concat(this.__chain, this.__final)
+    const chain = [function initialLink () {
+      return arguments[args.length]()
+    }].concat(this.__chain, this.__final)
 
     let i = 0
     const self = this
@@ -104,7 +106,7 @@ class Superchain {
 
         if (thisContext.__exitChain) {
           if (this.debug) {
-            console.log('[Superchain] Exit chain (fn)', this.name)
+            console.log('[Superchain] Exit chain', this.name)
           }
 
           return resolve(thisContext)
@@ -133,7 +135,7 @@ class Superchain {
 
           const exitFn = function exitFn () {
             if (self.debug) {
-              console.log('[Superchain] Exit chain', self.name)
+              console.log('[Superchain] Chain exit called', self.name)
             }
 
             self.__exitChain = true
@@ -151,10 +153,18 @@ class Superchain {
       console.log('[Superchain] Run chain', this.name)
     }
 
-    return next().then((res) => {
-      console.log('FIN', res)
+    const p = next().then((res) => {
       return res
     })
+
+    return {
+      then (fn) {
+        return p.then(fn)
+      },
+      catch (fn) {
+        return p.catch(fn)
+      }
+    }
   }
 
   getLinkType (link) {
