@@ -142,7 +142,10 @@ class Superchain {
             return resolve(thisContext)
           }
 
-          fn.apply(thisContext, args.concat([nextFn, exitFn]))
+          const p = fn.apply(thisContext, args.concat([nextFn, exitFn]))
+          if (p && p.then) {
+            p.then(() => {}).catch((err) => reject(err))
+          }
         } catch (err) {
           return reject(err)
         }
