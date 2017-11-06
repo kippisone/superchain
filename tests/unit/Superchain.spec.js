@@ -611,7 +611,7 @@ describe('Superchain', () => {
       const res = superchain.run(ctx)
       inspect(res).isPromise()
       return res.then(() => {
-        inspect(ctx.chain).isEql([
+        inspect(ctx.chain).hasValues([
           'one', 'two', 'three',
           'four', 'five', 'six', 'seven',
           'eight', 'nine'
