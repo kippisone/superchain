@@ -557,6 +557,34 @@ describe('Superchain', () => {
       })
     })
 
+    it('should run next generator link on yield next()', function testFn () {
+      const fn1 = function * (ctx, next) { ctx.chain.push('one'); yield next(); ctx.chain.push('ten') }
+      const fn2 = function * (ctx, next) { ctx.chain.push('two'); yield next(); ctx.chain.push('nine') }
+      const fn3 = function * (ctx, next) { ctx.chain.push('three'); yield next(); ctx.chain.push('eight') }
+      const fn4 = function * (ctx, next) { ctx.chain.push('four'); yield next(); ctx.chain.push('seven') }
+      const fn5 = function * (ctx, next) { ctx.chain.push('five'); yield next(); ctx.chain.push('six') }
+
+      superchain.add(fn1)
+      superchain.add(fn2)
+      superchain.add(fn3)
+      superchain.add(fn4)
+      superchain.add(fn5)
+
+      const ctx = {
+        chain: []
+      }
+
+      const res = superchain.run(ctx)
+      inspect(res).isPromise()
+      return res.then(() => {
+        inspect(ctx.chain).isEql([
+          'one', 'two', 'three',
+          'four', 'five', 'six', 'seven',
+          'eight', 'nine', 'ten'
+        ])
+      })
+    })
+
     it('should run next async link on await next()', function testFn () {
       if (!isAsyncSupported()) {
         this.test.title = `(SKIP TEST: async functions not supported by current Node version!) ${this.test.title})`
@@ -586,7 +614,7 @@ describe('Superchain', () => {
         inspect(ctx.chain).isEql([
           'one', 'two', 'three',
           'four', 'five', 'six', 'seven',
-          'eight', 'nine', 'ten'
+          'eight', 'nine'
         ])
       })
     })
