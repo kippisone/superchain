@@ -71,6 +71,7 @@ class Bucketchain {
             next()
           }).catch((err) => {
             if (this.__errorBucket) {
+              thisContext.__chainErr = null
               this.__errorBucket.runWith.apply(this.__errorBucket, [thisContext, err].concat(args))
                 .then(() => {
                   resolve(thisContext)

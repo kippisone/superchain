@@ -87,9 +87,8 @@ class Superchain {
     const args = Array.prototype.slice.call(arguments, 1)
 
     thisContext.__exitChain = false
-    let __chainErr = null
     thisContext.cancelChain = function cancelChain (err) {
-      this.__chainErr = err
+      thisContext.__chainErr = err
     }
 
     const chain = [function initialLink () {
@@ -98,10 +97,15 @@ class Superchain {
 
     let i = 0
     const self = this
+
     const next = () => {
       return new Promise((resolve, reject) => {
-        if (__chainErr) {
-          return reject(__chainErr)
+        const cancelChain = (err) => {
+          reject(err)
+        }
+
+        if (thisContext.__chainErr) {
+          return reject(thisContext.__chainErr)
         }
 
         if (thisContext.__exitChain) {
@@ -129,7 +133,7 @@ class Superchain {
               resolve(res)
               return res
             }).catch((err) => {
-              reject(err)
+              cancelChain(err)
             })
           }
 
@@ -144,7 +148,9 @@ class Superchain {
 
           const p = fn.apply(thisContext, args.concat([nextFn, exitFn]))
           if (p && p.then) {
-            p.then(() => {}).catch((err) => reject(err))
+            p.then(() => {}).catch((err) => {
+              reject(err)
+            })
           }
         } catch (err) {
           return reject(err)
