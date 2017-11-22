@@ -1,6 +1,6 @@
 {
   "name": "superchain",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "High performant middleware chain",
   "main": "src/app.js",
   "author": "Andi Heinkelein <andifeind@noname-media.com>",
