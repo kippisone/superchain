@@ -1,6 +1,6 @@
 {
   "name": "superchain",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "description": "High performant middleware chain",
   "main": "src/app.js",
   "types": "src/app.d.ts",
