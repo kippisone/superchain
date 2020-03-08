@@ -3,6 +3,7 @@
   "version": "2.3.3",
   "description": "High performant middleware chain",
   "main": "src/app.js",
+  "types": "src/app.d.ts",
   "author": "Andi Heinkelein <andifeind@noname-media.com>",
   "license": "MIT",
   "scripts": {
