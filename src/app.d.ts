@@ -22,7 +22,7 @@ export declare class Bucketchain {
 }
 
 export declare class Superchain {
-  constructor(conf: any);
+  constructor(conf?: any);
   debug: boolean;
   name: any;
   add(link: any): number;
