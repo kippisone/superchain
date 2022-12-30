@@ -30,7 +30,7 @@
     "@noname-media/eslint-config-standard": "1.1.0",
     "inspect.js": "^1.11.8",
     "lagoon-reporter": "^0.7.5",
-    "mocha": "^7.1.0",
+    "mocha": "^10.2.0",
     "sinon": "^9.0.0",
     "testberry": "^0.2.1"
   },
